@@ -1,0 +1,94 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "host.exp.exponent",
+    "module": "expo.modules.contacts",
+    "version": "14.2.3",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.13"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "expo.modules.contacts-14.2.3.aar",
+          "url": "expo.modules.contacts-14.2.3.aar",
+          "size": 110249,
+          "sha512": "b88ba33de32e4381afeeada8b09cb2bca22d3cc16169543d2887724e3aec01d0f6ff0109f1aa6cc8a36d5a04ac405aa46c16db8267db7ac4fc9a9a4afb9393a1",
+          "sha256": "4f6af632a11068250eeaaafaace053800aea611abcc0641c234d38bf4063ae21",
+          "sha1": "4d5985209ffa30db9cc22afe42192fdb751002cf",
+          "md5": "ff117e0a25dc721105fac2b682fbccb3"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk7",
+          "version": {
+            "requires": "2.0.21"
+          }
+        },
+        {
+          "group": "androidx.annotation",
+          "module": "annotation",
+          "version": {
+            "requires": "1.2.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "expo.modules.contacts-14.2.3.aar",
+          "url": "expo.modules.contacts-14.2.3.aar",
+          "size": 110249,
+          "sha512": "b88ba33de32e4381afeeada8b09cb2bca22d3cc16169543d2887724e3aec01d0f6ff0109f1aa6cc8a36d5a04ac405aa46c16db8267db7ac4fc9a9a4afb9393a1",
+          "sha256": "4f6af632a11068250eeaaafaace053800aea611abcc0641c234d38bf4063ae21",
+          "sha1": "4d5985209ffa30db9cc22afe42192fdb751002cf",
+          "md5": "ff117e0a25dc721105fac2b682fbccb3"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseSourcePublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "expo.modules.contacts-14.2.3-sources.jar",
+          "url": "expo.modules.contacts-14.2.3-sources.jar",
+          "size": 19911,
+          "sha512": "889e2a06f3475783a6c456ca8602cf7d62f2298149b2fe4949f76fb8ad612d3f3483bb1aa0190baafe8e03dbe96c1dd66a5fd3f6d44270a8401f8ea4193f6f51",
+          "sha256": "7aeaba46e5f31eeb8907a1479bf370d4a7aacecf5303f057ec827183913844a6",
+          "sha1": "6e2521a77e5d8d3633d441e087238e9e7e2a16cb",
+          "md5": "2d4ca7a318f43555ff2820fcb37cd288"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "vibecode",
+    "slug": "vibecode",
+    "scheme": "vibecode",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "extra": {
+      "eas": {
+        "projectId": "784a5177-0ce8-4f0f-94db-30b29deab7f9"
+      },
+      "EXPO_PUBLIC_VIBECODE_STRIPE_PUBLISHABLE_KEY": "pk_live_51Qj2CqA8oCA97KnOYe41gAIaouiiq0nQtK4qNyrA2yGgMct8V9TnM8bJFVKzWrksrWGOKFBUVeMrycHLgnMeslKG00HUMKwQSZ",
+      "EXPO_PUBLIC_VIBECODE_STRIPE_SECRET_KEY": "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",
+      "EXPO_PUBLIC_VIBECODE_STRIPE_WEBHOOK_SECRET": "whsec_D7tz70BijUil3rVU3Tlpo0acZiprdul0",
+      "EXPO_PUBLIC_VIBECODE_STRIPE_BASIC_PRICE_ID": "price_1S0CM0A8oCA97KnONtkaL4mT",
+      "EXPO_PUBLIC_VIBECODE_STRIPE_PRO_PRICE_ID": "price_1S0CN5A8oCA97KnOhTHuCpla",
+      "EXPO_PUBLIC_VIBECODE_SUPABASE_URL": "https://eghyodcwpvoyjsuakvof.supabase.co",
+      "EXPO_PUBLIC_VIBECODE_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVnaHlvZGN3cHZveWpzdWFrdm9mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg3MDgxMjIsImV4cCI6MjA2NDI4NDEyMn0.u5_I65BeJf5rYlWQAiLR1dC-wcxTpLXbAMb6Jjij5d8",
+      "EXPO_PUBLIC_VIBECODE_SUPABASE_SERVICE_ROLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVnaHlvZGN3cHZveWpzdWFrdm9mIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImliYXQiOjE3NDg3MDgxMjIsImV4cCI6MjA2NDI4NDEyMn0.O8X3__sLf6u9f_rjNwY8OqRsBiFtwQkAf2_Xg41cGjk",
+      "EXPO_PUBLIC_VIBECODE_USDA_API_KEY": "3CdvPBMVe7v6dTUiY1vQaD9pARI9jumAeVYOeivo",
+      "EXPO_PUBLIC_VIBECODE_REPLICATE_API_TOKEN": "r8_bVgJwwYprd6U4jZbu0SLw76R0m7DkAG0RK1Gf",
+      "EXPO_PUBLIC_VIBECODE_EXPO_TOKEN": "BwDolpk8lqCBSDLHrn0cqT_-pwtKszDAaM6i4bSi",
+      "EXPO_USERNAME": "patron3z"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "edgeToEdgeEnabled": true
+    }
+  }
+}

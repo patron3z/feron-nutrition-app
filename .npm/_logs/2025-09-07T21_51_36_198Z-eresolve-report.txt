@@ -1,0 +1,27 @@
+'Log files:
+/home/user/.npm/_logs/2025-09-07T21_51_36_198Z-debug-0.log
+
+# npm resolution error report
+
+While resolving: victory-native@41.17.1
+Found: @shopify/react-native-skia@2.0.0-next.4
+node_modules/@shopify/react-native-skia
+  @shopify/react-native-skia@"v2.0.0-next.4" from the root project
+  peerOptional @shopify/react-native-skia@"*" from react-native-vision-camera@4.6.4
+  node_modules/react-native-vision-camera
+    react-native-vision-camera@"^4.6.4" from the root project
+
+Could not resolve dependency:
+peer @shopify/react-native-skia@">=1.2.3" from victory-native@41.17.1
+node_modules/victory-native
+  victory-native@"^41.16.2" from the root project
+
+Conflicting peer dependency: @shopify/react-native-skia@2.2.11
+node_modules/@shopify/react-native-skia
+  peer @shopify/react-native-skia@">=1.2.3" from victory-native@41.17.1
+  node_modules/victory-native
+    victory-native@"^41.16.2" from the root project
+
+Fix the upstream dependency conflict, or retry
+this command with --force or --legacy-peer-deps
+to accept an incorrect (and potentially broken) dependency resolution.

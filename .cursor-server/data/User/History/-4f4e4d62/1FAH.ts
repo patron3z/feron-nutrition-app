@@ -1,0 +1,663 @@
+import { analyzeNutritionImage, estimateNutritionWithOpenAI } from "./replicate";
+import { getOpenAITextResponse } from "./chat-service";
+import { Food } from "../types/nutrition";
+
+// Fonctions d'estimation intelligente des valeurs nutritionnelles
+function getDefaultCaloriesForFood(foodName: string): number {
+  const name = foodName.toLowerCase();
+  
+  // Viandes et protéines
+  if (name.includes('chicken') || name.includes('poulet')) return 165;
+  if (name.includes('beef') || name.includes('bœuf') || name.includes('boeuf')) return 250;
+  if (name.includes('pork') || name.includes('porc')) return 242;
+  if (name.includes('fish') || name.includes('poisson') || name.includes('salmon')) return 208;
+  if (name.includes('egg') || name.includes('œuf') || name.includes('oeuf')) return 155;
+  
+  // Féculents
+  if (name.includes('rice') || name.includes('riz')) return 130;
+  if (name.includes('pasta') || name.includes('pâtes') || name.includes('pates')) return 131;
+  if (name.includes('bread') || name.includes('pain')) return 265;
+  if (name.includes('potato') || name.includes('pomme de terre')) return 77;
+  
+  // Légumes
+  if (name.includes('broccoli') || name.includes('brocoli')) return 34;
+  if (name.includes('carrot') || name.includes('carotte')) return 41;
+  if (name.includes('lettuce') || name.includes('salade') || name.includes('laitue')) return 15;
+  if (name.includes('tomato') || name.includes('tomate')) return 18;
+  
+  // Fruits
+  if (name.includes('apple') || name.includes('pomme')) return 52;
+  if (name.includes('banana') || name.includes('banane')) return 89;
+  if (name.includes('orange')) return 47;
+  
+  // Produits laitiers
+  if (name.includes('cheese') || name.includes('fromage')) return 402;
+  if (name.includes('milk') || name.includes('lait')) return 42;
+  if (name.includes('yogurt') || name.includes('yaourt')) return 59;
+  
+  // Plats préparés
+  if (name.includes('pizza')) return 266;
+  if (name.includes('burger') || name.includes('hamburger')) return 295;
+  if (name.includes('sandwich')) return 250;
+  
+  // Valeur par défaut plus réaliste
+  return 180;
+}
+
+function getDefaultProteinForFood(foodName: string): number {
+  const name = foodName.toLowerCase();
+  
+  // Viandes et protéines
+  if (name.includes('chicken') || name.includes('poulet')) return 31;
+  if (name.includes('beef') || name.includes('bœuf') || name.includes('boeuf')) return 26;
+  if (name.includes('pork') || name.includes('porc')) return 27;
+  if (name.includes('fish') || name.includes('poisson') || name.includes('salmon')) return 25;
+  if (name.includes('egg') || name.includes('œuf') || name.includes('oeuf')) return 13;
+  
+  // Féculents
+  if (name.includes('rice') || name.includes('riz')) return 2.7;
+  if (name.includes('pasta') || name.includes('pâtes') || name.includes('pates')) return 5;
+  if (name.includes('bread') || name.includes('pain')) return 9;
+  if (name.includes('potato') || name.includes('pomme de terre')) return 2;
+  
+  // Légumes
+  if (name.includes('broccoli') || name.includes('brocoli')) return 2.8;
+  if (name.includes('carrot') || name.includes('carotte')) return 0.9;
+  if (name.includes('lettuce') || name.includes('salade') || name.includes('laitue')) return 1.4;
+  if (name.includes('tomato') || name.includes('tomate')) return 0.9;
+  
+  // Produits laitiers
+  if (name.includes('cheese') || name.includes('fromage')) return 25;
+  if (name.includes('milk') || name.includes('lait')) return 3.4;
+  if (name.includes('yogurt') || name.includes('yaourt')) return 10;
+  
+  // Valeur par défaut
+  return 8;
+}
+
+function getDefaultCarbsForFood(foodName: string): number {
+  const name = foodName.toLowerCase();
+  
+  // Viandes et protéines
+  if (name.includes('chicken') || name.includes('poulet') || 
+      name.includes('beef') || name.includes('pork') || 
+      name.includes('fish') || name.includes('poisson')) return 0;
+  if (name.includes('egg') || name.includes('œuf') || name.includes('oeuf')) return 1.1;
+  
+  // Féculents
+  if (name.includes('rice') || name.includes('riz')) return 28;
+  if (name.includes('pasta') || name.includes('pâtes') || name.includes('pates')) return 25;
+  if (name.includes('bread') || name.includes('pain')) return 49;
+  if (name.includes('potato') || name.includes('pomme de terre')) return 17;
+  
+  // Légumes
+  if (name.includes('broccoli') || name.includes('brocoli')) return 7;
+  if (name.includes('carrot') || name.includes('carotte')) return 10;
+  if (name.includes('lettuce') || name.includes('salade') || name.includes('laitue')) return 3;
+  if (name.includes('tomato') || name.includes('tomate')) return 3.9;
+  
+  // Fruits
+  if (name.includes('apple') || name.includes('pomme')) return 14;
+  if (name.includes('banana') || name.includes('banane')) return 23;
+  if (name.includes('orange')) return 12;
+  
+  // Valeur par défaut
+  return 15;
+}
+
+function getDefaultFatForFood(foodName: string): number {
+  const name = foodName.toLowerCase();
+  
+  // Viandes et protéines
+  if (name.includes('chicken') || name.includes('poulet')) return 3.6;
+  if (name.includes('beef') || name.includes('bœuf') || name.includes('boeuf')) return 15;
+  if (name.includes('pork') || name.includes('porc')) return 14;
+  if (name.includes('fish') || name.includes('poisson') || name.includes('salmon')) return 13;
+  if (name.includes('egg') || name.includes('œuf') || name.includes('oeuf')) return 11;
+  
+  // Féculents
+  if (name.includes('rice') || name.includes('riz')) return 0.3;
+  if (name.includes('pasta') || name.includes('pâtes') || name.includes('pates')) return 1.1;
+  if (name.includes('bread') || name.includes('pain')) return 3.2;
+  if (name.includes('potato') || name.includes('pomme de terre')) return 0.1;
+  
+  // Légumes et fruits
+  if (name.includes('broccoli') || name.includes('carrot') || 
+      name.includes('lettuce') || name.includes('tomato') ||
+      name.includes('apple') || name.includes('orange')) return 0.3;
+  if (name.includes('banana') || name.includes('banane')) return 0.3;
+  
+  // Produits laitiers
+  if (name.includes('cheese') || name.includes('fromage')) return 33;
+  if (name.includes('milk') || name.includes('lait')) return 1;
+  if (name.includes('yogurt') || name.includes('yaourt')) return 0.4;
+  
+  // Valeur par défaut
+  return 5;
+}
+
+export interface NutritionAnalysisResult {
+  foods: Food[];
+  confidence: number;
+  suggestions?: string[];
+}
+
+/**
+ * Analyze food description and extract nutritional information using AI
+ */
+export const analyzeFood = async (description: string): Promise<NutritionAnalysisResult> => {
+  const prompt = `Analyze this food description and provide detailed nutritional information: "${description}"
+
+Please respond with a JSON object in this exact format:
+{
+  "foods": [
+    {
+      "id": "unique_id",
+      "name": "Food Name",
+      "calories": number,
+      "protein": number,
+      "carbs": number,
+      "fat": number,
+      "fiber": number,
+      "sugar": number,
+      "sodium": number,
+      "servingSize": "100g"
+    }
+  ],
+  "confidence": 0.95,
+  "suggestions": ["Optional suggestions for the user"]
+}
+
+Rules:
+- If multiple foods are mentioned, include all of them
+- Use realistic nutritional values per 100g serving
+- Confidence should be between 0.1 and 1.0
+- Include fiber, sugar, and sodium when possible
+- If unsure about exact values, use reasonable estimates
+- Keep food names simple and clear`;
+
+  try {
+    const response = await getOpenAITextResponse([
+      { role: "user", content: prompt }
+    ]);
+
+    // Try to parse the JSON response
+    const jsonMatch = response.content.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("No valid JSON found in response");
+    }
+
+    const result = JSON.parse(jsonMatch[0]) as NutritionAnalysisResult;
+    
+    // Validate the result structure
+    if (!result.foods || !Array.isArray(result.foods) || result.foods.length === 0) {
+      throw new Error("Invalid response structure");
+    }
+
+    // Ensure each food has required properties
+    result.foods = result.foods.map((food, index) => ({
+      id: food.id || `ai_food_${Date.now()}_${index}`,
+      name: food.name || "Unknown food",
+      calories: Math.max(0, food.calories || 0),
+      protein: Math.max(0, food.protein || 0),
+      carbs: Math.max(0, food.carbs || 0),
+      fat: Math.max(0, food.fat || 0),
+      fiber: food.fiber || 0,
+      sugar: food.sugar || 0,
+      sodium: food.sodium || 0,
+      servingSize: food.servingSize || "100g",
+      brand: "AI analyzed",
+    }));
+
+    return {
+      foods: result.foods,
+      confidence: Math.min(1, Math.max(0.1, result.confidence || 0.8)),
+      suggestions: result.suggestions || [],
+    };
+
+  } catch (error) {
+    console.error("AI nutrition analysis error:", error);
+    
+    // Fallback: return a basic food item
+    return {
+      foods: [{
+        id: `fallback_${Date.now()}`,
+        name: description,
+        calories: 100,
+        protein: 2,
+        carbs: 20,
+        fat: 1,
+        fiber: 2,
+        sugar: 5,
+        sodium: 50,
+        servingSize: "100g",
+        brand: "Estimate",
+      }],
+      confidence: 0.3,
+      suggestions: ["Nutrition values are estimated. Please verify with reliable sources."],
+    };
+  }
+};
+
+/**
+ * Enhanced food analysis using USDA + Replicate GPT-4.1-mini with portion scale detection
+ */
+export const analyzeFoodWithUSDAAndReplicate = async (imageBase64?: string, description?: string): Promise<NutritionAnalysisResult> => {
+  console.log('🔍 Analyse avancée avec USDA + Replicate GPT-4.1-mini + Scale...');
+  
+  try {
+    // Step 1: Use Replicate GPT-4.1-mini to identify foods AND estimate portion scales
+    
+    let identificationPrompt = "";
+    if (imageBase64) {
+      identificationPrompt = `Analyze this food image and identify each visible food item with portion scales.
+
+IMPORTANT: Respond ONLY with food lines in this EXACT format:
+FOOD_NAME | SCALE_FACTOR | REASONING
+
+Rules:
+- Use simple food names (no asterisks, parentheses, or formatting)
+- Scale: 0.5 = half portion, 1.0 = standard, 2.0 = double portion
+- Do NOT include headers, separators, or explanatory text
+- Maximum 6 foods per image
+
+Examples:
+Grilled chicken breast | 1.2 | Larger than standard portion
+Rice | 0.8 | Small serving visible
+Broccoli | 1.5 | Large portion on plate
+
+Be precise with scale factors based on visual analysis.`;
+    } else if (description) {
+      identificationPrompt = `Identify foods in: "${description}"
+
+IMPORTANT: Respond ONLY with food lines in this EXACT format:
+FOOD_NAME | SCALE_FACTOR | REASONING
+
+Rules:
+- Use simple food names (no asterisks, parentheses, or formatting)
+- Scale: 1.0 = standard serving (adjust based on description context)
+- Do NOT include headers, separators, or explanatory text
+
+Examples:
+Chicken breast | 1.0 | Standard serving mentioned
+Rice | 1.0 | Typical portion size`;
+    } else {
+      throw new Error("Either image or description is required");
+    }
+
+    const replicateResponse = imageBase64 
+      ? await analyzeNutritionImage(imageBase64)
+      : await analyzeNutritionImage('data:text/plain,' + encodeURIComponent(identificationPrompt));
+    
+    const cleanResponse = (replicateResponse || "")
+      .replace(/```[\s\S]*?```/g, "")
+      .replace(/\r/g, "")
+      .trim();
+    console.log('🤖 Replicate GPT-4.1-mini identification avec scale:', cleanResponse);
+    
+    // Debug détaillé pour identifier les problèmes
+    if (cleanResponse.toLowerCase().includes('no food') || 
+        cleanResponse.toLowerCase().includes('pas de nourriture') ||
+        cleanResponse.toLowerCase().includes('cannot identify')) {
+      console.warn('⚠️ Replicate ne détecte pas de nourriture dans l\'image');
+      console.log('💡 Suggestions: Essayez avec une image plus claire ou mieux éclairée');
+    }
+
+    // Step 2: Parse Replicate response to extract foods and scales
+    const lines = cleanResponse.split('\n')
+      .map((l: string) => l.trim())
+      .filter((l: string) => l && !/^example:|^format:|^respond/i.test(l));
+
+    let foodLines = lines.filter((line: string) => line.includes('|'));
+    // If no pipe-delimited lines, try commas or single tokens as names with default scale
+    if (foodLines.length === 0 && lines.length > 0) {
+      foodLines = lines;
+    }
+
+    const foodsWithScales = foodLines.map((line: string) => {
+      const parts = line.split('|').map((p: string) => p.trim());
+      let name = (parts[0] || line).replace(/^[-*•]\s*/, "");
+      
+      // Nettoyer le nom d'aliment
+      name = name
+        .replace(/\*+/g, '') // Enlever tous les astérisques
+        .replace(/\s*\([^)]*\)/g, '') // Enlever les (parenthèses)
+        .replace(/^FOOD_NAME$/i, '') // Enlever les en-têtes de tableau
+        .replace(/^-+$/, '') // Enlever les lignes de séparation
+        .trim();
+      
+      const scale = parts.length >= 2 ? (parseFloat(parts[1]) || 1.0) : 1.0;
+      const reasoning = parts.length >= 3 ? (parts[2] || "Default scale") : "Default scale";
+      return { name, scale, reasoning };
+    }).filter((f: any) => {
+      // Filtrer les entrées vides, les en-têtes, les séparateurs et les messages "pas de nourriture"
+      return !!f.name && 
+             f.name.length > 0 && 
+             !/^(food_name|scale_factor|reasoning|-+)$/i.test(f.name) &&
+             !/^-+$/.test(f.name) &&
+             !/no food|pas de nourriture|cannot identify|impossible d'identifier/i.test(f.name);
+    });
+
+    // If still empty, synthesize a single generic item
+    const parsedFoods = foodsWithScales.length > 0 ? foodsWithScales : [{ name: description || "Aliment scanné", scale: 1.0, reasoning: "Default scale" }];
+
+    console.log('📏 Aliments avec échelles détectées:', parsedFoods);
+
+    // Step 3: Search USDA for each identified food
+    const { searchFood } = await import("./usda");
+    const nutritionResults: any[] = [];
+    
+    for (const foodWithScale of parsedFoods) {
+      const currentFoodName = foodWithScale.name;
+      const scale = Number.isFinite(foodWithScale.scale) ? Math.max(0.25, Math.min(4, foodWithScale.scale)) : 1.0;
+      try {
+        const foodName = currentFoodName;
+        console.log(`🔍 Recherche USDA pour: ${foodName} (échelle: ${scale}x)`);
+        const usdaResults = await searchFood(foodName, 3);
+        
+        if (Array.isArray(usdaResults) && usdaResults.length > 0) {
+          const bestMatch = usdaResults[0];
+          
+          // Extract nutrition data (per 100g base)
+          const baseNutrition: any = {
+            id: `usda_${bestMatch.fdcId}_${scale}x`,
+            name: bestMatch.description || foodName,
+            calories: 0,
+            protein: 0,
+            carbs: 0,
+            fat: 0,
+            fiber: 0,
+            sugar: 0,
+            sodium: 0,
+            servingSize: `${(100 * scale).toFixed(0)}g (${scale}x scale)`,
+            brand: bestMatch.brandOwner || "USDA Database",
+            portionScale: scale,
+            scaleReasoning: foodWithScale.reasoning
+          };
+
+          // Parse nutrition from USDA data and apply scale
+          bestMatch.foodNutrients?.forEach(nutrient => {
+            const nameLower = (nutrient.nutrientName || "").toLowerCase();
+            const unitLower = (nutrient.unitName || "").toLowerCase();
+            const baseValue = Number(nutrient.value) || 0;
+            let value = baseValue;
+            // Convert kJ to kcal if needed for energy
+            if (nameLower.startsWith("energy") && unitLower.includes("kj")) {
+              value = baseValue * 0.239;
+            }
+            const scaledValue = value * scale;
+            switch (nameLower) {
+              case 'energy':
+              case 'energy (kcal)':
+                baseNutrition.calories = scaledValue;
+                break;
+              case 'protein':
+                baseNutrition.protein = scaledValue;
+                break;
+              case 'carbohydrate, by difference':
+              case 'total carbohydrate':
+              case 'carbohydrate':
+              case 'carbohydrates':
+                baseNutrition.carbs = scaledValue;
+                break;
+              case 'total lipid (fat)':
+              case 'total fat':
+              case 'fat':
+                baseNutrition.fat = scaledValue;
+                break;
+              case 'fiber, total dietary':
+              case 'dietary fiber':
+                baseNutrition.fiber = scaledValue;
+                break;
+              case 'sugars, total including nlea':
+              case 'total sugars':
+              case 'sugars, total':
+                baseNutrition.sugar = scaledValue;
+                break;
+              case 'sodium, na':
+              case 'sodium':
+                baseNutrition.sodium = scaledValue;
+                break;
+            }
+          });
+
+          nutritionResults.push(baseNutrition);
+          console.log(`✅ USDA data avec échelle ${scale}x pour ${foodName}:`, {
+            calories: Number(baseNutrition.calories || 0).toFixed(0),
+            protein: Number(baseNutrition.protein || 0).toFixed(1),
+            scale: scale,
+            reasoning: foodWithScale.reasoning
+          });
+        } else {
+          // Fallback to OpenAI estimation with scale
+          console.log(`⚠️ Pas de données USDA pour ${foodName}, utilisation OpenAI avec échelle ${scale}x`);
+          
+          try {
+            const nutritionData = await estimateNutritionWithOpenAI(foodName);
+            
+            // Utiliser les valeurs OpenAI ou des valeurs par défaut améliorées
+            const baseCalories = nutritionData.calories || getDefaultCaloriesForFood(foodName);
+            const baseProtein = nutritionData.protein || getDefaultProteinForFood(foodName);
+            const baseCarbs = nutritionData.carbs || getDefaultCarbsForFood(foodName);
+            const baseFat = nutritionData.fat || getDefaultFatForFood(foodName);
+            
+            nutritionResults.push({
+              id: `replicate_${Date.now()}_${foodName.replace(/\s+/g, '_')}_${scale}x`,
+              name: foodName,
+              calories: baseCalories * scale,
+              protein: baseProtein * scale,
+              carbs: baseCarbs * scale,
+              fat: baseFat * scale,
+              fiber: (nutritionData.fiber || 2) * scale,
+              sugar: (nutritionData.sugar || 5) * scale,
+              sodium: (nutritionData.sodium || 50) * scale,
+              servingSize: `${(100 * scale).toFixed(0)}g (${scale}x scale)`,
+              brand: "Replicate GPT-4.1-mini",
+              portionScale: scale,
+              scaleReasoning: foodWithScale.reasoning
+            });
+            console.log(`✅ Replicate estimation avec échelle ${scale}x pour ${foodName}: ${(baseCalories * scale).toFixed(0)}kcal`);
+          } catch (parseError) {
+            console.warn('Erreur parsing Replicate nutrition, utilisation des valeurs par défaut améliorées:', parseError);
+            const defaultCalories = getDefaultCaloriesForFood(foodName);
+            nutritionResults.push({
+              id: `fallback_${Date.now()}_${foodName.replace(/\s+/g, '_')}_${scale}x`,
+              name: foodName,
+              calories: defaultCalories * scale,
+              protein: getDefaultProteinForFood(foodName) * scale,
+              carbs: getDefaultCarbsForFood(foodName) * scale,
+              fat: getDefaultFatForFood(foodName) * scale,
+              fiber: 2 * scale,
+              sugar: 5 * scale,
+              sodium: 100 * scale,
+              servingSize: `${(100 * scale).toFixed(0)}g (${scale}x scale)`,
+              brand: "Estimation intelligente",
+              portionScale: scale,
+              scaleReasoning: foodWithScale.reasoning
+            });
+            console.log(`✅ Fallback intelligent avec échelle ${scale}x pour ${foodName}: ${(defaultCalories * scale).toFixed(0)}kcal`);
+          }
+        }
+      } catch (foodError) {
+        console.warn(`Erreur pour ${currentFoodName}:`, foodError);
+      }
+    }
+
+    if (nutritionResults.length === 0) {
+      // As-a-last resort: one generic fallback item
+    const fallbackName = description || "Aliment scanné";
+    const fallbackCalories = getDefaultCaloriesForFood(fallbackName);
+    return {
+      foods: [{
+        id: `fallback_${Date.now()}`,
+        name: fallbackName,
+        calories: fallbackCalories,
+        protein: getDefaultProteinForFood(fallbackName),
+        carbs: getDefaultCarbsForFood(fallbackName),
+        fat: getDefaultFatForFood(fallbackName),
+        fiber: 2,
+        sugar: 5,
+        sodium: 100,
+        servingSize: "estimation intelligente",
+        brand: "Estimation intelligente",
+        portionScale: 1,
+        scaleReasoning: "Default scale"
+      }],
+      confidence: 0.4,
+      suggestions: ["Estimation basée sur le type d'aliment - vérifiez si nécessaire"]
+    };
+    }
+
+    return {
+      foods: nutritionResults,
+      confidence: nutritionResults.some((f: any) => (f.brand || "").includes("USDA")) ? 0.9 : 0.7,
+      suggestions: [
+        "Données provenant de USDA et Replicate GPT-4.1-mini avec détection d'échelle",
+        "Portions automatiquement ajustées selon l'analyse visuelle",
+        "Vérifiez les échelles détectées et ajustez si nécessaire",
+        ...nutritionResults.filter((f: any) => f.portionScale && f.portionScale !== 1.0)
+          .map((f: any) => `${f.name}: ${f.portionScale}x - ${f.scaleReasoning}`)
+      ]
+    };
+
+  } catch (error) {
+    console.error('❌ Erreur analyse USDA + Replicate:', error);
+    
+    // Ultimate fallback
+    const fallbackName = description || "Aliment scanné";
+    const fallbackCalories = getDefaultCaloriesForFood(fallbackName);
+    return {
+      foods: [{
+        id: `fallback_${Date.now()}`,
+        name: fallbackName,
+        calories: fallbackCalories,
+        protein: getDefaultProteinForFood(fallbackName),
+        carbs: getDefaultCarbsForFood(fallbackName),
+        fat: getDefaultFatForFood(fallbackName),
+        fiber: 2,
+        sugar: 5,
+        sodium: 100,
+        servingSize: "estimation intelligente",
+        brand: "Estimation intelligente"
+      }],
+      confidence: 0.4,
+      suggestions: ["Estimation basée sur le type d'aliment - vérifiez si nécessaire"]
+    };
+  }
+};
+
+/**
+ * Analyze an image of food and extract nutritional information
+ */
+export const analyzeFoodImage = async (imageBase64: string): Promise<NutritionAnalysisResult> => {
+  const prompt = `Analyze this food image and identify all visible foods with their estimated nutritional information.
+
+Please respond with a JSON object in this exact format:
+{
+  "foods": [
+    {
+      "id": "unique_id",
+      "name": "Food Name",
+      "calories": number,
+      "protein": number,
+      "carbs": number,
+      "fat": number,
+      "fiber": number,
+      "sugar": number,
+      "sodium": number,
+      "servingSize": "estimated portion size"
+    }
+  ],
+  "confidence": 0.85,
+  "suggestions": ["Suggestions based on what you see"]
+}
+
+Rules:
+- Identify all visible foods in the image
+- Estimate portion sizes based on visual cues
+- Provide nutritional values for the estimated portions
+- Be conservative with confidence if image quality is poor
+- Include cooking methods in food names if relevant (grilled, fried, etc.)`;
+
+  try {
+    // Use OpenAI client directly for image analysis
+    const { getOpenAIClient } = await import("./openai");
+    const client = getOpenAIClient();
+
+    const response = await client.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: prompt },
+            {
+              type: "image_url",
+              image_url: {
+                url: `data:image/jpeg;base64,${imageBase64}`,
+              },
+            },
+          ],
+        },
+      ],
+      max_tokens: 2048,
+      temperature: 0.7,
+    });
+
+    const content = response.choices[0]?.message?.content || "";
+
+    // Parse response similar to text analysis
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("No valid JSON found in response");
+    }
+
+    const result = JSON.parse(jsonMatch[0]) as NutritionAnalysisResult;
+    
+    if (!result.foods || !Array.isArray(result.foods) || result.foods.length === 0) {
+      throw new Error("No foods identified in image");
+    }
+
+    // Process and validate foods
+    result.foods = result.foods.map((food, index) => ({
+      id: food.id || `ai_image_food_${Date.now()}_${index}`,
+      name: food.name || "Unknown food",
+      calories: Math.max(0, food.calories || 0),
+      protein: Math.max(0, food.protein || 0),
+      carbs: Math.max(0, food.carbs || 0),
+      fat: Math.max(0, food.fat || 0),
+      fiber: food.fiber || 0,
+      sugar: food.sugar || 0,
+      sodium: food.sodium || 0,
+      servingSize: food.servingSize || "estimated portion",
+      brand: "AI analyzed (image)",
+    }));
+
+    return {
+      foods: result.foods,
+      confidence: Math.min(1, Math.max(0.1, result.confidence || 0.7)),
+      suggestions: result.suggestions || ["Please verify portions and adjust if needed."],
+    };
+
+  } catch (error) {
+    console.error("AI image analysis error:", error);
+    
+    return {
+      foods: [{
+        id: `image_fallback_${Date.now()}`,
+        name: "Unknown food",
+        calories: 150,
+        protein: 3,
+        carbs: 25,
+        fat: 2,
+        fiber: 2,
+        sugar: 8,
+        sodium: 100,
+        servingSize: "estimated portion",
+        brand: "Estimate",
+      }],
+      confidence: 0.2,
+      suggestions: ["Impossible d'analyser l'image. Ajoutez manuellement les informations."],
+    };
+  }
+};

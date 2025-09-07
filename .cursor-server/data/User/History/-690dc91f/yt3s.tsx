@@ -1,0 +1,292 @@
+import React, { useRef, useState } from "react";
+import { View, Text, Pressable, ActivityIndicator, Linking } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
+import { useActionSheet } from "@expo/react-native-action-sheet";
+import * as ImagePicker from "expo-image-picker";
+import { useRoute } from "@react-navigation/native";
+import { useNutritionStore } from "../state/nutritionStore";
+import { Meal, MealFood, Food } from "../types/nutrition";
+import { FoodCache } from "../utils/foodCache";
+import { saveScanImage } from "../utils/imageUtils";
+import { getTodayISO } from "../utils/dateUtils";
+
+export default function CameraScreen({ navigation }: any) {
+  const { showActionSheetWithOptions } = useActionSheet();
+  const cameraRef = useRef<any>(null);
+  const [permission, requestPermission] = useCameraPermissions();
+  const [facing, setFacing] = useState<CameraType>("back");
+  const [torch, setTorch] = useState(false);
+  const [isCapturing, setIsCapturing] = useState(false);
+  const [analysisStep, setAnalysisStep] = useState<string>("");
+  const route = useRoute<any>();
+  const targetDate: string | undefined = (route as any)?.params?.targetDate;
+  const addMealForDate = useNutritionStore((s) => s.addMealForDate);
+  const addPendingScan = useNutritionStore((s) => s.addPendingScan);
+  const clearPendingScan = useNutritionStore((s) => s.clearPendingScan);
+
+  const canAskAgain = permission?.canAskAgain ?? true;
+  const granted = permission?.granted ?? false;
+
+  const toggleFacing = () => setFacing((cur) => (cur === "back" ? "front" : "back"));
+
+  // Fonction unifiée pour traiter l'analyse des aliments
+  const processFoodAnalysis = async (base64: string, dateTarget: string, imageUri: string) => {
+    // Try cache first
+    const cachedResult = await FoodCache.get(base64);
+    let result = cachedResult;
+    
+    if (!result) {
+      const analysisPromise = import("../api/nutrition-ai").then(({ analyzeFoodWithUSDAAndGemini }) => 
+        analyzeFoodWithUSDAAndGemini(base64)
+      );
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("Timeout d'analyse (15s)")), 15000)
+      );
+      
+      result = await Promise.race([analysisPromise, timeoutPromise]) as any;
+      
+      if (result && Array.isArray(result.foods) && result.foods.length > 0) {
+        await FoodCache.set(base64, result.foods, result.confidence || 0.8);
+      }
+    }
+
+    const foods: Food[] = result && Array.isArray(result.foods) ? result.foods : [];
+    const confidence = (result && typeof result.confidence === "number") ? result.confidence : 0.7;
+    
+    console.log('📊 Analyse terminée:', {
+      foodsCount: foods.length,
+      confidence,
+      fromCache: !!cachedResult,
+      scales: foods.map(f => ({ name: f.name, scale: f.portionScale }))
+    });
+
+    if (foods.length === 0) {
+      throw new Error("Aucun aliment détecté dans l'image");
+    }
+
+    const totals = foods.reduce(
+      (acc, f) => ({
+        calories: acc.calories + (f.calories || 0),
+        protein: acc.protein + (f.protein || 0),
+        carbs: acc.carbs + (f.carbs || 0),
+        fat: acc.fat + (f.fat || 0),
+      }),
+      { calories: 0, protein: 0, carbs: 0, fat: 0 }
+    );
+
+    if (confidence < 0.8) {
+      // Demander confirmation à l'utilisateur
+      clearPendingScan(dateTarget);
+      navigation.navigate("ConfirmFoods", {
+        aiFoodsFromImage: foods,
+        aiConfidence: confidence,
+        targetDate: dateTarget,
+        imageUri,
+      });
+    } else {
+      // Ajout automatique si confiance élevée
+      const mealFoods: MealFood[] = foods.map((f) => ({ food: f, quantity: 1, unit: "portion" }));
+      const meal: Meal = {
+        id: Date.now().toString(),
+        name: `Scan - ${foods.map(f => f.name).join(', ')}`,
+        foods: mealFoods,
+        totalCalories: totals.calories,
+        totalProtein: totals.protein,
+        totalCarbs: totals.carbs,
+        totalFat: totals.fat,
+        timestamp: new Date(),
+        mealType: "snack",
+        imageUri,
+      };
+
+      addMealForDate(dateTarget, meal);
+      clearPendingScan(dateTarget);
+      
+      console.log('✅ Repas ajouté automatiquement:', {
+        name: meal.name,
+        calories: meal.totalCalories,
+        confidence
+      });
+    }
+  };
+
+  const onTakePhoto = async () => {
+    if (!cameraRef.current || isCapturing) return;
+    try {
+      setIsCapturing(true);
+      const photo = await cameraRef.current.takePicture({ base64: true, quality: 0.6 });
+      if (photo?.base64) {
+        console.log("📸 Photo prise, lancement de l'analyse en arrière-plan...");
+        
+        // Optimistic pending bump and immediate return to dashboard
+        const estimatedCalories = 250;
+        const pendingDate = targetDate || getTodayISO();
+        addPendingScan(pendingDate, estimatedCalories);
+        const base64 = photo.base64;
+        const imageUri = await saveScanImage(base64);
+
+        // Run analysis in the background
+        (async () => {
+          try {
+            await processFoodAnalysis(base64, pendingDate, imageUri);
+          } catch (analysisError) {
+            console.error('❌ Erreur analyse caméra:', analysisError);
+            clearPendingScan(pendingDate);
+            try {
+              navigation.navigate("Main", {
+                screen: "Dashboard",
+                params: { error: "Analyse indisponible. Réessayez ou ajoutez manuellement." },
+              });
+            } catch (navError) {
+              console.error('❌ Erreur navigation:', navError);
+            }
+          }
+        })();
+
+        // Return to dashboard instantly
+        navigation.goBack();
+      } else {
+        navigation.goBack();
+      }
+    } catch (e) {
+      navigation.goBack();
+    } finally {
+      // Avoid toggling local state after returning; safe to ignore here
+      setIsCapturing(false);
+    }
+  };
+
+  if (!permission) {
+    return <View style={{ flex: 1, backgroundColor: "black" }} />;
+  }
+
+  if (!granted) {
+    return (
+      <SafeAreaView className="flex-1 bg-black">
+        <View className="flex-1 items-center justify-center px-8">
+          <Ionicons name="camera" size={56} color="#9CA3AF" />
+          <Text className="text-white text-xl font-semibold mt-4 text-center">
+            Allow camera access
+          </Text>
+          <Text className="text-gray-300 text-center mt-2">
+            We need your permission to use the camera to photograph your meals.
+          </Text>
+
+          <Pressable
+            className="mt-6 bg-green-500 px-6 py-3 rounded-xl"
+            onPress={() => requestPermission()}
+          >
+            <Text className="text-white font-medium">Allow camera</Text>
+          </Pressable>
+
+          {!canAskAgain && (
+            <Pressable
+              className="mt-3 bg-gray-700 px-6 py-3 rounded-xl"
+              onPress={() => Linking.openSettings()}
+            >
+              <Text className="text-white font-medium">Open settings</Text>
+            </Pressable>
+          )}
+
+          <Pressable className="mt-6" onPress={() => navigation.goBack()}>
+            <Text className="text-gray-400">Cancel</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <View style={{ flex: 1, backgroundColor: "black" }}>
+      <CameraView
+        ref={cameraRef}
+        style={{ flex: 1 }}
+        facing={facing}
+        enableTorch={torch}
+        onCameraReady={() => {}}
+      />
+
+      {/* Overlay UI */}
+      <View className="absolute top-0 left-0 right-0 z-10">
+        <SafeAreaView>
+          <View className="flex-row items-center justify-between px-4 py-3">
+            <Pressable className="w-10 h-10 rounded-full bg-black/40 items-center justify-center" onPress={() => navigation.goBack()}>
+              <Ionicons name="chevron-down" size={24} color="white" />
+            </Pressable>
+            <View className="flex-row items-center space-x-2">
+              <Pressable className="w-10 h-10 rounded-full bg-black/40 items-center justify-center" onPress={() => setTorch((t) => !t)}>
+                <Ionicons name={torch ? "flash" : "flash-off"} size={20} color="white" />
+              </Pressable>
+              <Pressable className="w-10 h-10 rounded-full bg-black/40 items-center justify-center" onPress={toggleFacing}>
+                <Ionicons name="camera-reverse" size={20} color="white" />
+              </Pressable>
+              <Pressable
+                className="w-10 h-10 rounded-full bg-black/40 items-center justify-center"
+                onPress={() => {
+                  showActionSheetWithOptions(
+                    { options: ["Camera", "Gallery", "Cancel"], cancelButtonIndex: 2 },
+                    async (index) => {
+                      if (index === 1) {
+                  const result = await ImagePicker.launchImageLibraryAsync({
+                    mediaTypes: ["images"],
+                    base64: true,
+                    quality: 0.6,
+                    allowsEditing: true,
+                  });
+                          if (!result.canceled && result.assets[0].base64) {
+                            try {
+                              const base64 = result.assets[0].base64;
+                              const imageUri = await saveScanImage(base64);
+                              const pendingDate = targetDate || getTodayISO();
+                              
+                              // Utiliser la fonction unifiée
+                              await processFoodAnalysis(base64, pendingDate, imageUri);
+                              navigation.goBack();
+                            } catch (galleryError) {
+                              console.error('❌ Erreur analyse galerie:', galleryError);
+                              navigation.navigate("Main", {
+                                screen: "Dashboard",
+                                params: { error: "Impossible d'analyser l'image de la galerie. Réessayez ou ajoutez manuellement." },
+                              });
+                            }
+                          }
+
+                      }
+                    }
+                  );
+                }}
+              >
+                <Ionicons name="ellipsis-horizontal" size={20} color="white" />
+              </Pressable>
+            </View>
+          </View>
+        </SafeAreaView>
+      </View>
+
+      <View className="absolute bottom-0 left-0 right-0 z-10 pb-8">
+        <View className="flex-row items-center justify-center">
+          <Pressable
+            className={`w-20 h-20 rounded-full items-center justify-center ${isCapturing ? "bg-white/20" : "bg-white"}`}
+            onPress={onTakePhoto}
+            disabled={isCapturing}
+          >
+            {isCapturing ? (
+              <View className="items-center">
+                <ActivityIndicator color="white" size="large" />
+                {analysisStep && (
+                  <Text className="text-white text-xs mt-2 text-center max-w-20">
+                    {analysisStep}
+                  </Text>
+                )}
+              </View>
+            ) : (
+              <View className="w-16 h-16 rounded-full bg-black" />
+            )}
+          </Pressable>
+        </View>
+      </View>
+    </View>
+  );
+}

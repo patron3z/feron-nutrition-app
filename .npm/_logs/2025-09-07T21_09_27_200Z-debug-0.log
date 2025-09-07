@@ -1,0 +1,147 @@
+0 verbose cli /usr/local/bin/node /usr/local/bin/npm
+1 info using npm@10.5.0
+2 info using node@v21.7.3
+3 timing npm:load:whichnode Completed in 2ms
+4 timing config:load:defaults Completed in 1ms
+5 timing config:load:file:/usr/local/lib/node_modules/npm/npmrc Completed in 0ms
+6 timing config:load:builtin Completed in 1ms
+7 timing config:load:cli Completed in 2ms
+8 timing config:load:env Completed in 0ms
+9 timing config:load:file:/home/user/workspace/.npmrc Completed in 0ms
+10 timing config:load:project Completed in 1ms
+11 timing config:load:file:/home/user/.npmrc Completed in 0ms
+12 timing config:load:user Completed in 1ms
+13 timing config:load:file:/usr/local/etc/npmrc Completed in 0ms
+14 timing config:load:global Completed in 0ms
+15 timing config:load:setEnvs Completed in 1ms
+16 timing config:load Completed in 7ms
+17 timing npm:load:configload Completed in 7ms
+18 timing config:load:flatten Completed in 2ms
+19 timing npm:load:mkdirpcache Completed in 1ms
+20 timing npm:load:mkdirplogs Completed in 0ms
+21 verbose title npm install replicate
+22 verbose argv "install" "replicate"
+23 timing npm:load:setTitle Completed in 0ms
+24 timing npm:load:display Completed in 1ms
+25 verbose logfile logs-max:10 dir:/home/user/.npm/_logs/2025-09-07T21_09_27_200Z-
+26 verbose logfile /home/user/.npm/_logs/2025-09-07T21_09_27_200Z-debug-0.log
+27 timing npm:load:logFile Completed in 8ms
+28 timing npm:load:timers Completed in 0ms
+29 timing npm:load:configScope Completed in 0ms
+30 timing npm:load Completed in 36ms
+31 timing arborist:ctor Completed in 1ms
+32 silly logfile done cleaning log files
+33 timing idealTree:init Completed in 564ms
+34 timing idealTree:userRequests Completed in 1ms
+35 silly idealTree buildDeps
+36 silly fetch manifest replicate@*
+37 http fetch GET 200 https://registry.npmjs.org/npm 782ms
+38 http fetch GET 200 https://registry.npmjs.org/replicate 794ms (cache miss)
+39 silly placeDep ROOT replicate@1.1.0 OK for: template-app-53@1.0.0 want: *
+40 silly fetch manifest readable-stream@>=4.0.0
+41 http fetch GET 200 https://registry.npmjs.org/readable-stream 59ms (cache miss)
+42 timing idealTree:#root Completed in 885ms
+43 silly fetch manifest ws@^8.18.0
+44 http fetch GET 200 https://registry.npmjs.org/ws 57ms (cache miss)
+45 silly fetch manifest bufferutil@^4.0.1
+46 http fetch GET 200 https://registry.npmjs.org/bufferutil 40ms (cache miss)
+47 silly fetch manifest utf-8-validate@>=5.0.2
+48 http fetch GET 200 https://registry.npmjs.org/utf-8-validate 44ms (cache miss)
+49 silly placeDep ROOT ws@8.18.3 REPLACE for: openai@4.96.2 want: ^8.18.0
+50 timing idealTree:node_modules/openai Completed in 161ms
+51 silly fetch manifest ws@^6.2.3
+52 silly placeDep node_modules/@react-native/dev-middleware ws@6.2.3 OK for: @react-native/dev-middleware@0.79.2 want: ^6.2.3
+53 silly fetch manifest async-limiter@~1.0.0
+54 http fetch GET 200 https://registry.npmjs.org/async-limiter 65ms (cache miss)
+55 timing idealTree:node_modules/@react-native/dev-middleware Completed in 73ms
+56 silly placeDep node_modules/react-native ws@6.2.3 OK for: react-native@0.79.2 want: ^6.2.3
+57 timing idealTree:node_modules/react-native Completed in 2ms
+58 silly placeDep ROOT readable-stream@4.7.0 OK for: replicate@1.1.0 want: >=4.0.0
+59 silly fetch manifest buffer@^6.0.3
+60 silly fetch manifest events@^3.3.0
+61 silly fetch manifest process@^0.11.10
+62 http fetch GET 200 https://registry.npmjs.org/events 51ms (cache miss)
+63 silly fetch manifest string_decoder@^1.3.0
+64 http fetch GET 200 https://registry.npmjs.org/buffer 59ms (cache miss)
+65 http fetch GET 200 https://registry.npmjs.org/process 83ms (cache miss)
+66 http fetch GET 200 https://registry.npmjs.org/string_decoder 49ms (cache miss)
+67 timing idealTree:node_modules/replicate Completed in 108ms
+68 silly placeDep node_modules/readable-stream buffer@6.0.3 OK for: readable-stream@4.7.0 want: ^6.0.3
+69 silly placeDep ROOT events@3.3.0 OK for: readable-stream@4.7.0 want: ^3.3.0
+70 silly placeDep ROOT process@0.11.10 OK for: readable-stream@4.7.0 want: ^0.11.10
+71 silly placeDep ROOT string_decoder@1.3.0 OK for: readable-stream@4.7.0 want: ^1.3.0
+72 timing idealTree:node_modules/readable-stream Completed in 7ms
+73 timing idealTree:node_modules/events Completed in 0ms
+74 timing idealTree:node_modules/process Completed in 0ms
+75 timing idealTree:node_modules/string_decoder Completed in 0ms
+76 silly fetch manifest @shopify/react-native-skia@>=1.2.3
+77 http fetch GET 200 https://registry.npmjs.org/@shopify%2freact-native-skia 190ms (cache miss)
+78 silly fetch manifest react@*
+79 http fetch GET 200 https://registry.npmjs.org/react 188ms (cache miss)
+80 silly fetch manifest react-native@*
+81 http fetch GET 200 https://registry.npmjs.org/react-native 326ms (cache miss)
+82 silly fetch manifest @types/react@^19.1.0
+83 http fetch GET 200 https://registry.npmjs.org/@types%2freact 111ms (cache miss)
+84 silly fetch manifest react-native-reanimated@>=3.0.0
+85 http fetch GET 200 https://registry.npmjs.org/react-native-reanimated 161ms (cache miss)
+86 silly fetch manifest @babel/core@^7.0.0-0
+87 http fetch GET 200 https://registry.npmjs.org/@babel%2fcore 72ms (cache miss)
+88 silly fetch manifest react-native-worklets@>=0.5.0
+89 http fetch GET 200 https://registry.npmjs.org/react-native-worklets 113ms (cache miss)
+90 timing idealTree Completed in 3246ms
+91 timing command:install Completed in 3314ms
+92 notice
+92 notice New [31mmajor[39m version of npm available! [31m10.5.0[39m -> [32m11.6.0[39m
+92 notice Changelog: [36mhttps://github.com/npm/cli/releases/tag/v11.6.0[39m
+92 notice Run [32mnpm install -g npm@11.6.0[39m to update!
+92 notice
+93 verbose stack Error: could not resolve
+93 verbose stack     at PlaceDep.failPeerConflict (/usr/local/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/place-dep.js:503:25)
+93 verbose stack     at new PlaceDep (/usr/local/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/place-dep.js:157:21)
+93 verbose stack     at #buildDepStep (/usr/local/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/build-ideal-tree.js:940:18)
+93 verbose stack     at async Arborist.buildIdealTree (/usr/local/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/build-ideal-tree.js:203:7)
+93 verbose stack     at async Promise.all (index 1)
+93 verbose stack     at async Arborist.reify (/usr/local/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/reify.js:154:5)
+93 verbose stack     at async Install.exec (/usr/local/lib/node_modules/npm/lib/commands/install.js:153:5)
+93 verbose stack     at async module.exports (/usr/local/lib/node_modules/npm/lib/cli-entry.js:61:5)
+94 verbose cwd /home/user/workspace
+95 verbose Linux 4.4.0
+96 verbose node v21.7.3
+97 verbose npm  v10.5.0
+98 error code ERESOLVE
+99 error ERESOLVE could not resolve
+100 error
+101 error While resolving: [1mvictory-native[22m@[1m41.17.1[22m
+101 error Found: [1m@shopify/react-native-skia[22m@[1m2.0.0-next.4[22m[2m[22m
+101 error [2mnode_modules/@shopify/react-native-skia[22m
+101 error   peerOptional [1m@shopify/react-native-skia[22m@"[1m*[22m" from [1mreact-native-vision-camera[22m@[1m4.6.4[22m[2m[22m
+101 error   [2mnode_modules/react-native-vision-camera[22m
+101 error     [1mreact-native-vision-camera[22m@"[1m^4.6.4[22m" from the root project
+101 error   [1m@shopify/react-native-skia[22m@"[1mv2.0.0-next.4[22m" from the root project
+101 error
+101 error Could not resolve dependency:
+101 error [35mpeer[39m [1m@shopify/react-native-skia[22m@"[1m>=1.2.3[22m" from [1mvictory-native[22m@[1m41.17.1[22m[2m[22m
+101 error [2mnode_modules/victory-native[22m
+101 error   [1mvictory-native[22m@"[1m^41.16.2[22m" from the root project
+101 error
+101 error Conflicting peer dependency: [1m@shopify/react-native-skia[22m@[1m2.2.11[22m[2m[22m
+101 error [2mnode_modules/@shopify/react-native-skia[22m
+101 error   [35mpeer[39m [1m@shopify/react-native-skia[22m@"[1m>=1.2.3[22m" from [1mvictory-native[22m@[1m41.17.1[22m[2m[22m
+101 error   [2mnode_modules/victory-native[22m
+101 error     [1mvictory-native[22m@"[1m^41.16.2[22m" from the root project
+101 error
+101 error Fix the upstream dependency conflict, or retry
+101 error this command with --force or --legacy-peer-deps
+101 error to accept an incorrect (and potentially broken) dependency resolution.
+102 error
+102 error
+102 error For a full report see:
+102 error /home/user/.npm/_logs/2025-09-07T21_09_27_200Z-eresolve-report.txt
+103 verbose exit 1
+104 timing npm Completed in 4145ms
+105 verbose unfinished npm timer reify 1757279368028
+106 verbose unfinished npm timer reify:loadTrees 1757279368090
+107 verbose unfinished npm timer idealTree:buildDeps 1757279368657
+108 verbose unfinished npm timer idealTree:node_modules/victory-native 1757279369897
+109 verbose code 1
+110 error A complete log of this run can be found in: /home/user/.npm/_logs/2025-09-07T21_09_27_200Z-debug-0.log
